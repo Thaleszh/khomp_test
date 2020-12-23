@@ -6,11 +6,11 @@ using namespace std;
 string route_reply_invite_with200ok(string invite){
     string route = "";
     // find route placement in text
-        // Go to Record-Route
-        // Copy
-    // End record-routes
-
-    route += "\r\n";
+    int start = invite.find("Record-Route:");
+    // find after record
+    int end = invite.find("Session-Expires:");
+    // Copy
+    route.append(invite, start, end-start);
     return route;
 }
 
