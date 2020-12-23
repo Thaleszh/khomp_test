@@ -1,9 +1,10 @@
 #include <string>
 #include <iostream>
+#include <list>
 
 using namespace std;
 
-string route_reply_invite_with200ok(string invite){
+string route_reply_invite_with_200ok(string invite){
     string route = "";
     // find route placement in text
     int start = invite.find("Record-Route:");
@@ -15,12 +16,38 @@ string route_reply_invite_with200ok(string invite){
 }
 
 string route_reply_200ok_with_ack(string ok200) {
-    string route = "Route:";
+    string route = "Route: ";
     // find route placement in text
+    list<string> records;
+    int current_record = ok200.find("Record-Route:");
+    int length, end_of_line;
+    while (current_record != -1) {
+        // find end
+        end_of_line = ok200.find("\n", current_record);
 
-    // parse and list
+        // remove useless characters (Record-Route, spaces)
+        current_record += 14;
+        end_of_line -= 1;
 
-    // invert
+        length = end_of_line - current_record;
+
+        // add to start of list of records, keeping inverse order
+        records.push_front(ok200.substr(current_record, length));
+
+        // find next record
+        current_record = ok200.find("Record-Route:", current_record);
+    }
+
+    // add all records to route
+    int num_records = records.size();
+    route += "[";
+    for (int i = 0; i < num_records; i++) {
+        route += records.front();
+        records.pop_front();
+        if (i+1 != num_records)
+            route += ", ";
+    }
+    route += "]";
 
     route += "\r\n";
     return route;
@@ -38,7 +65,7 @@ string reply_invite_with_200ok(string invite)
     "From: \"User1175\" <sip:1175@10.5.10.160>;tag=65c2a5724f6141eaadc605056b4205f\r\n"
     ;
 
-    ok200 += route_reply_invite_with200ok(invite);
+    ok200 += route_reply_invite_with_200ok(invite);
 
     ok200+= "Session-ID: fc17026de14837b9f0a03bda7b846ab3\r\n"
     "Supported: 100rel,timer,replaces,histinfo\r\n"
